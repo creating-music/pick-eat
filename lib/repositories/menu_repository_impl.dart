@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import '../models/category.dart';
 import '../models/menu.dart';
 import 'menu_repository.dart';
@@ -21,11 +19,5 @@ class MenuRepositoryImpl implements MenuRepository {
   @override
   Future<List<Menu>> getMenus() async {
     return _menus;
-  }
-
-  @override
-  Future<Menu> getRandomMenu() async {
-    final random = Random();
-    return _menus[random.nextInt(_menus.length)];
   }
 }
