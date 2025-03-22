@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
 
@@ -62,7 +61,7 @@ class Ball extends BodyComponent {
     canvas.drawCircle(
       Offset.zero,
       _radius + 1,
-      Paint()..color = Colors.black.withOpacity(0.2),
+      Paint()..color = const Color.fromRGBO(0, 0, 0, 0.2),
     );
 
     // 공 메인 색상
@@ -72,7 +71,7 @@ class Ball extends BodyComponent {
     canvas.drawCircle(
       Offset(-_radius * 0.3, -_radius * 0.3),
       _radius * 0.3,
-      Paint()..color = Colors.white.withOpacity(0.6),
+      Paint()..color = const Color.fromRGBO(255, 255, 255, 0.6),
     );
 
     if (isSelected) {

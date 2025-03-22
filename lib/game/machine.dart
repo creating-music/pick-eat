@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
 
@@ -75,7 +74,7 @@ class Machine extends BodyComponent {
     canvas.drawPath(
       shadowPath,
       Paint()
-        ..color = Colors.black.withOpacity(0.1)
+        ..color = const Color.fromRGBO(0, 0, 0, 0.1)
         ..style = PaintingStyle.fill,
     );
 

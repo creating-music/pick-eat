@@ -83,19 +83,8 @@ class AppTheme {
   );
 
   // 카드 스타일
-  static BoxDecoration get cardDecoration => BoxDecoration(
-    color: cardColor,
-    borderRadius: BorderRadius.circular(16),
-    boxShadow: [cardShadow],
-  );
-
-  // 그림자 스타일
-  static BoxShadow get cardShadow => BoxShadow(
-    color: Colors.black.withOpacity(0.1),
-    blurRadius: 10,
-    spreadRadius: 0,
-    offset: const Offset(0, 4),
-  );
+  static BoxDecoration get cardDecoration =>
+      BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16));
 
   // 버튼 스타일
   static ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
