@@ -21,7 +21,8 @@ class LotteryGame extends Forge2DGame {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    final gameSize = screenToWorld(camera.viewport.size);
+    var gameSize = screenToWorld(camera.viewport.size);
+    gameSize = Vector2(750, 500);
     machine = Machine(gameSize: gameSize);
     await add(machine);
 

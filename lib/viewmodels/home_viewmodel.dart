@@ -13,11 +13,6 @@ import '../services/menu_selection_service.dart';
  *    - 개선: GameService 인터페이스 정의 후 의존성 주입으로 변경
  *    - 이유: 강한 결합 감소 및 테스트 용이성 확보
  * 
- * 2. 날짜 관련 로직 분리
- *    - 현재: getDayOfWeek() 메서드가 ViewModel 내부에 하드코딩
- *    - 개선: DateFormattingService 같은 전용 서비스로 분리
- *    - 이유: 단일 책임 원칙 준수 및 재사용성 향상
- * 
  * 3. LotteryGame과의 콜백 기반 통신 개선
  *    - 현재: onBallSelected 콜백을 통해 직접 통신
  *    - 개선: 이벤트 버스 또는 스트림 기반 통신으로 변경
@@ -79,24 +74,4 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getDayOfWeek() {
-    switch (DateTime.now().weekday) {
-      case 1:
-        return '월요일';
-      case 2:
-        return '화요일';
-      case 3:
-        return '수요일';
-      case 4:
-        return '목요일';
-      case 5:
-        return '금요일';
-      case 6:
-        return '토요일';
-      case 7:
-        return '일요일';
-      default:
-        return '';
-    }
-  }
 }

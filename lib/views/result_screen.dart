@@ -54,22 +54,6 @@ class ResultScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // 카테고리 배지
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryLight,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '카테고리: ${viewModel.getCategoryName()}',
-                              style: AppTheme.tagText,
-                            ),
-                          ),
-
                           const SizedBox(height: 30),
 
                           // 메뉴 아이콘
