@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pick_eat/views/lotto_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../design/theme.dart';
@@ -90,16 +91,18 @@ class ResultScreen extends StatelessWidget {
                             style: AppTheme.primaryButtonStyle,
                             onPressed: () {
                               // 홈 화면으로 돌아가기 전에 상태 초기화
-                              final homeViewModel = Provider.of<LottoViewModel>(
+                              final lottoViewModel = Provider.of<LottoViewModel>(
                                 context,
                                 listen: false,
                               );
-                              homeViewModel.reset();
+                              lottoViewModel.reset();
 
                               // 홈 화면으로 돌아가기
-                              Navigator.of(
-                                context,
-                              ).popUntil((route) => route.isFirst);
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => LottoScreen(),
+                                ),
+                              );
                             },
                             child: Text(
                               '홈 화면으로 돌아가기',
