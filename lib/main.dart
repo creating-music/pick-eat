@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:pick_eat/views/splash_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'design/theme.dart';
@@ -47,7 +48,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '랜덤 점심 추천기',
       theme: AppTheme.lightTheme,
-      home: const LottoScreen(),
+      home: const SplashScreen(),
     );
   }
 }
