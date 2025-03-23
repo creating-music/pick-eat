@@ -7,7 +7,7 @@ import 'repositories/menu_repository_impl.dart';
 import 'services/history_service.dart';
 import 'services/menu_selection_service.dart';
 import 'viewmodels/lotto_viewmodel.dart';
-import 'views/home_screen.dart';
+import 'views/lotto_screen.dart';
 
 void main() async {
   // Flutter 바인딩 초기화
@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '랜덤 점심 추천기',
       theme: AppTheme.lightTheme,
-      home: const HomeScreen(),
+      home: const LottoScreen(),
     );
   }
 }

@@ -7,14 +7,14 @@ import '../viewmodels/lotto_viewmodel.dart';
 import '../widgets/lottery_machine.dart';
 import 'result_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class LottoScreen extends StatefulWidget {
+  const LottoScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<LottoScreen> createState() => _LottoScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _LottoScreenState extends State<LottoScreen> {
   // 메뉴 선택 후 결과 화면으로 이동하는 메서드
   void _navigateToResult(BuildContext context, LottoViewModel viewModel) {
     if (mounted && viewModel.selectedMenu != null) {
