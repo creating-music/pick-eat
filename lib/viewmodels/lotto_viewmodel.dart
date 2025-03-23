@@ -29,7 +29,7 @@ import '../services/menu_selection_service.dart';
  *    - 이유: 코드 응집도 향상 및 유지보수성 개선
  */
 
-class HomeViewModel extends ChangeNotifier {
+class LottoViewModel extends ChangeNotifier {
   final HistoryService _historyService;
   final MenuSelectionService _menuSelectionService;
 
@@ -37,7 +37,7 @@ class HomeViewModel extends ChangeNotifier {
   bool isLotteryRunning = false;
   Menu? selectedMenu;
 
-  HomeViewModel({
+  LottoViewModel({
     required HistoryService historyService,
     required MenuSelectionService menuSelectionService,
   }) : _historyService = historyService,

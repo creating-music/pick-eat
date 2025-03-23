@@ -6,7 +6,7 @@ import 'design/theme.dart';
 import 'repositories/menu_repository_impl.dart';
 import 'services/history_service.dart';
 import 'services/menu_selection_service.dart';
-import 'viewmodels/home_viewmodel.dart';
+import 'viewmodels/lotto_viewmodel.dart';
 import 'views/home_screen.dart';
 
 void main() async {
@@ -28,7 +28,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(
           create:
-              (_) => HomeViewModel(
+              (_) => LottoViewModel(
                 historyService: historyService,
                 menuSelectionService: menuSelectionService,
               ),

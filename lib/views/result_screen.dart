@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../design/theme.dart';
 import '../models/menu.dart';
-import '../viewmodels/home_viewmodel.dart';
+import '../viewmodels/lotto_viewmodel.dart';
 import '../viewmodels/result_viewmodel.dart';
 
 class ResultScreen extends StatelessWidget {
@@ -90,7 +90,7 @@ class ResultScreen extends StatelessWidget {
                             style: AppTheme.primaryButtonStyle,
                             onPressed: () {
                               // 홈 화면으로 돌아가기 전에 상태 초기화
-                              final homeViewModel = Provider.of<HomeViewModel>(
+                              final homeViewModel = Provider.of<LottoViewModel>(
                                 context,
                                 listen: false,
                               );

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../design/theme.dart';
-import '../viewmodels/home_viewmodel.dart';
+import '../viewmodels/lotto_viewmodel.dart';
 import '../widgets/lottery_machine.dart';
 import 'result_screen.dart';
 
@@ -16,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // 메뉴 선택 후 결과 화면으로 이동하는 메서드
-  void _navigateToResult(BuildContext context, HomeViewModel viewModel) {
+  void _navigateToResult(BuildContext context, LottoViewModel viewModel) {
     if (mounted && viewModel.selectedMenu != null) {
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HomeViewModel>(
+    return Consumer<LottoViewModel>(
       builder: (context, viewModel, child) {
         return Scaffold(
           backgroundColor: AppTheme.backgroundColor,
