@@ -45,9 +45,9 @@ class Ball extends BodyComponent {
 
     final fixtureDef = FixtureDef(
       shape,
-      restitution: 0.8,
+      restitution: 10,
       density: 1.0,
-      friction: 0.4,
+      friction: 0.1,
     );
 
     return world.createBody(bodyDef)..createFixture(fixtureDef);

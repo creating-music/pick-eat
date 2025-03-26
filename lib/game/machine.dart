@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
 
@@ -8,49 +9,34 @@ class Machine extends BodyComponent {
 
   @override
   Body createBody() {
-    // 머신의 경계를 만듭니다.
     final bodyDef = BodyDef(position: Vector2.zero(), type: BodyType.static);
-
     final body = world.createBody(bodyDef);
 
-    // 바닥
-    final bottomShape =
-        EdgeShape()..set(
-          Vector2(0, gameSize.y * 0.7),
-          Vector2(gameSize.x, gameSize.y * 0.7),
-        );
-    body.createFixture(FixtureDef(bottomShape));
-
-    // 왼쪽 벽
-    final leftShape =
-        EdgeShape()..set(
-          Vector2(gameSize.x * 0.2, gameSize.y * 0.3),
-          Vector2(gameSize.x * 0.2, gameSize.y * 0.7),
-        );
-    body.createFixture(FixtureDef(leftShape));
-
-    // 오른쪽 벽
-    final rightShape =
-        EdgeShape()..set(
-          Vector2(gameSize.x * 0.8, gameSize.y * 0.3),
-          Vector2(gameSize.x * 0.8, gameSize.y * 0.7),
-        );
-    body.createFixture(FixtureDef(rightShape));
-
-    // 출구 (중간에 틈)
-    final exitLeftShape =
-        EdgeShape()..set(
-          Vector2(gameSize.x * 0.4, gameSize.y * 0.7),
-          Vector2(gameSize.x * 0.5, gameSize.y * 0.8),
-        );
-    body.createFixture(FixtureDef(exitLeftShape));
-
-    final exitRightShape =
-        EdgeShape()..set(
-          Vector2(gameSize.x * 0.6, gameSize.y * 0.7),
-          Vector2(gameSize.x * 0.5, gameSize.y * 0.8),
-        );
-    body.createFixture(FixtureDef(exitRightShape));
+    // 원형 경계 생성
+    final center = Vector2(gameSize.x * 0.5, gameSize.y * 0.5);
+    final radius = gameSize.x * 0.3;  // 반지름 설정
+    
+    // 원형 경계의 세그먼트를 만듭니다
+    final segments = 64;  // 원을 구성할 세그먼트 수
+    final angleStep = (2 * math.pi) / segments;
+    
+    for (var i = 0; i < segments; i++) {
+      final startAngle = i * angleStep;
+      final endAngle = (i + 1) * angleStep;
+      
+      // 하단 중앙 부분에 출구를 만들기 위해 해당 부분은 건너뜁니다
+      final start = Vector2(
+        center.x + radius * math.cos(startAngle),
+        center.y + radius * math.sin(startAngle),
+      );
+      final end = Vector2(
+        center.x + radius * math.cos(endAngle),
+        center.y + radius * math.sin(endAngle),
+      );
+      
+      final edgeShape = EdgeShape()..set(start, end);
+      body.createFixture(FixtureDef(edgeShape));
+    }
 
     return body;
   }
@@ -59,71 +45,21 @@ class Machine extends BodyComponent {
   void render(Canvas canvas) {
     super.render(canvas);
 
-    // 그림자 효과
-    final shadowPath =
-        Path()
-          ..moveTo(gameSize.x * 0.2, gameSize.y * 0.3)
-          ..lineTo(gameSize.x * 0.2, gameSize.y * 0.7)
-          ..lineTo(gameSize.x * 0.4, gameSize.y * 0.7)
-          ..lineTo(gameSize.x * 0.5, gameSize.y * 0.8)
-          ..lineTo(gameSize.x * 0.6, gameSize.y * 0.7)
-          ..lineTo(gameSize.x * 0.8, gameSize.y * 0.7)
-          ..lineTo(gameSize.x * 0.8, gameSize.y * 0.3)
-          ..close();
-
-    canvas.drawPath(
-      shadowPath,
-      Paint()
-        ..color = const Color.fromRGBO(0, 0, 0, 0.1)
-        ..style = PaintingStyle.fill,
-    );
+    final center = Offset(gameSize.x * 0.5, gameSize.y * 0.5);
+    final radius = gameSize.x * 0.3;
 
     // 머신 몸체 그리기
-    final outlinePaint =
-        Paint()
-          ..color = Colors.blue[700]!
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3.0;
+    final outlinePaint = Paint()
+      ..color = Colors.blue[700]!
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
 
-    final fillPaint =
-        Paint()
-          ..color = Colors.blue[100]!
-          ..style = PaintingStyle.fill;
+    final fillPaint = Paint()
+      ..color = Colors.blue[100]!
+      ..style = PaintingStyle.fill;
 
-    final path =
-        Path()
-          ..moveTo(gameSize.x * 0.2, gameSize.y * 0.3)
-          ..lineTo(gameSize.x * 0.2, gameSize.y * 0.7)
-          ..lineTo(gameSize.x * 0.4, gameSize.y * 0.7)
-          ..lineTo(gameSize.x * 0.5, gameSize.y * 0.8)
-          ..lineTo(gameSize.x * 0.6, gameSize.y * 0.7)
-          ..lineTo(gameSize.x * 0.8, gameSize.y * 0.7)
-          ..lineTo(gameSize.x * 0.8, gameSize.y * 0.3)
-          ..close();
-
-    canvas.drawPath(path, fillPaint);
-    canvas.drawPath(path, outlinePaint);
-
-    // 상단 레이블 배경
-    final labelRect = Rect.fromLTWH(
-      gameSize.x * 0.3,
-      gameSize.y * 0.32,
-      gameSize.x * 0.4,
-      gameSize.y * 0.08,
-    );
-
-    canvas.drawRect(labelRect, Paint()..color = Colors.white);
-
-    // 텍스트 설정 (간단한 표시)
-    final textPaint =
-        Paint()
-          ..color = Colors.blue[800]!
-          ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(
-      Offset(gameSize.x * 0.5, gameSize.y * 0.36),
-      gameSize.x * 0.03,
-      textPaint,
-    );
+    // 원형 경계 그리기
+    canvas.drawCircle(center, radius, fillPaint);
+    canvas.drawCircle(center, radius, outlinePaint);
   }
 }

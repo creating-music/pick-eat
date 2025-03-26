@@ -21,16 +21,17 @@ class LotteryGame extends Forge2DGame {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    var gameSize = screenToWorld(camera.viewport.size);
-    gameSize = Vector2(750, 500);
+    var viewportSize = camera.viewport.size;
+    var gameSize = Vector2(viewportSize.x, viewportSize.y);
+
     machine = Machine(gameSize: gameSize);
     await add(machine);
 
     // 10개의 공 추가
     final random = Random();
-    final ballRadius = gameSize.x * 0.05;
+    final ballRadius = gameSize.x * 0.01;
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 50; i++) {
       final ball = Ball(
         initialPosition: Vector2(
           gameSize.x * 0.3 + random.nextDouble() * gameSize.x * 0.4,
@@ -40,7 +41,27 @@ class LotteryGame extends Forge2DGame {
       );
       balls.add(ball);
       await add(ball);
+      
+      // 각 공에 초기 임펄스 부여하여 움직임 시작 (임펄스 강도 증가)
+      final impulse = Vector2(
+        random.nextDouble() * 4 - 2,  // -2에서 2 사이의 랜덤 값
+        random.nextDouble() * 4 - 2,
+      ) * 10000.0;  // 임펄스 강도를 5.0에서 10000.0으로 증가
+      
+      ball.body.applyLinearImpulse(impulse);
     }
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    super.update(dt);
+    super.update(dt);
+    super.update(dt);
+    super.update(dt);
+    super.update(dt);
+    super.update(dt);
+    super.update(dt);
   }
 
   void startLottery() {
@@ -48,27 +69,13 @@ class LotteryGame extends Forge2DGame {
 
     isRunning = true;
 
-    // 랜덤으로 공 하나를 선택
-    final random = Random();
-    selectedBall = balls[random.nextInt(balls.length)];
+    selectedBall!.isSelected = true;
 
-    // 선택된 공에 약간의 추가 힘을 가함
-    final force = Vector2(
-      -2.0 + random.nextDouble() * 4.0,
-      -5.0 - random.nextDouble() * 3.0,
-    );
-    selectedBall!.body.applyLinearImpulse(force);
+    // 콜백 호출
+    if (onBallSelected != null) {
+      onBallSelected!();
+    }
 
-    // 3초 후에 선택된 공을 표시하고 결과 처리
-    Future.delayed(const Duration(seconds: 3), () {
-      selectedBall!.isSelected = true;
-
-      // 콜백 호출
-      if (onBallSelected != null) {
-        onBallSelected!();
-      }
-
-      isRunning = false;
-    });
+    isRunning = false;
   }
 }
