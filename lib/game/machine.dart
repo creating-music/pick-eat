@@ -6,11 +6,9 @@ class Machine extends BodyComponent {
   final Vector2 gameSize;
 
   // 구멍 시작, 끝 각도
-  final double exitStartAngle = (85 / 180) * math.pi; // 출구 시작 각도 (하단 중앙)
-  final double exitEndAngle = (95 / 180) * math.pi;
+  final double exitStartAngle = (80 / 180) * math.pi; // 출구 시작 각도 (하단 중앙)
+  final double exitEndAngle = (100 / 180) * math.pi;
 
-  Machine({required this.gameSize}) : super(renderBody: false);
-  
   @override
   late final Vector2 center;
 
@@ -86,18 +84,18 @@ class Machine extends BodyComponent {
 
     // 원형 경계 그리기
     final sweepAngle = 2 * math.pi - (exitEndAngle - exitStartAngle);
-    canvas.drawCircle(center, radius, fillPaint);
+    canvas.drawCircle(centerOffset, radius, fillPaint);
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
+      Rect.fromCircle(center: centerOffset, radius: radius),
       exitEndAngle, // 시작 각도
       sweepAngle,   // 출구 부분을 제외한 나머지 부분
       false,
       arcPaint,
     );
 
-    _renderHole(canvas, center, radius);
+    _renderHole(canvas, centerOffset, radius);
     // 받침대
-    _renderSupport(canvas, center, radius);
+    _renderSupport(canvas, centerOffset, radius);
 
   }
 
