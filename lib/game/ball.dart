@@ -45,7 +45,7 @@ class Ball extends BodyComponent {
 
     final fixtureDef = FixtureDef(
       shape,
-      restitution: 10,
+      restitution: 1,
       density: 1.0,
       friction: 0.1,
     );
