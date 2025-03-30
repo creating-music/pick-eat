@@ -31,7 +31,7 @@ class LotteryGame extends Forge2DGame {
     final random = Random();
     final ballRadius = gameSize.x * 0.01;
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 100; i++) {
       final ball = Ball(
         initialPosition: Vector2(
           gameSize.x * 0.3 + random.nextDouble() * gameSize.x * 0.4,
