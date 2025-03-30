@@ -53,6 +53,19 @@ class Ball extends BodyComponent {
     return world.createBody(bodyDef)..createFixture(fixtureDef);
   }
 
+  void updateRestitution(double restitution) {
+    // body가 생성되었는지 확인
+    if (body.isActive) {
+      // Forge2D API에서는 fixture에 직접 접근할 수 있습니다
+      final fixtures = body.fixtures;
+      
+      // 모든 fixture의 restitution 값 갱신
+      for (final fixture in fixtures) {
+        fixture.restitution = restitution;
+      }
+    }
+  }
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
