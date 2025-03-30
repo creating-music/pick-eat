@@ -13,6 +13,11 @@ class LotteryGame extends Forge2DGame {
 
   Function? onBallSelected;
   bool isRunning = false;
+  
+  // 상승기류 관련 변수 추가
+  bool isUpliftActive = true;
+  double upliftTimer = 0.0;
+  final double upliftDuration = 10.0; // 상승기류 지속 시간 (초)
 
   @override
   Color backgroundColor() => Colors.white;
@@ -54,14 +59,58 @@ class LotteryGame extends Forge2DGame {
 
   @override
   void update(double dt) {
-    super.update(dt);
-    super.update(dt);
-    super.update(dt);
-    super.update(dt);
-    super.update(dt);
-    super.update(dt);
-    super.update(dt);
-    super.update(dt);
+    super.update(dt * 2);
+    super.update(dt * 2);
+    super.update(dt * 2);
+    super.update(dt * 2);
+    super.update(dt * 2);
+
+    // 상승기류 타이머 업데이트
+    if (isUpliftActive) {
+      upliftTimer += dt;
+      
+      // 10초가 지나면 상승기류 비활성화
+      if (upliftTimer >= upliftDuration) {
+        isUpliftActive = false;
+
+        for (final ball in balls) {
+          ball.updateRestitution(5);
+        }
+      }
+    }
+
+    // 상승기류가 활성화된 경우에만 힘 적용
+    if (isUpliftActive) {
+      // 모든 공에 중앙 기준으로 상승 기류 적용
+      for (final ball in balls) {
+        // 공과 중앙 사이의 거리 계산
+        final Vector2 ballPosition = ball.body.position;
+        final double xDistance = (ballPosition.x - machine.center.x).abs();
+        
+        // 힘 영향 반경 내에 있는 공에만 힘 적용
+        if (xDistance < machine.forceWidth) {
+          // 기본 상승 힘
+          final Vector2 upForce = Vector2(0, -1) * machine.forceStrength;
+          
+          // 거리 기반 감쇠 계수
+          final double dampingFactor = 1 - xDistance / machine.forceWidth;
+          
+          // 약간의 무작위성 추가 (좌우 움직임)
+          final random = Random();
+          final double xForceAmount = 0.3;
+          final Vector2 randomForce = Vector2(
+            (random.nextDouble() * 2 - 1) * machine.forceStrength * xForceAmount,
+            0
+          );
+          
+          // 최종 힘 계산
+          final Vector2 force = (upForce + randomForce) * dampingFactor;
+          
+          // 힘 적용 (기존 힘에 더해짐)
+          ball.body.applyForce(force);
+        }
+      }
+    }
   }
 
   void startLottery() {
@@ -77,5 +126,11 @@ class LotteryGame extends Forge2DGame {
     }
 
     isRunning = false;
+  }
+  
+  // 상승기류 재시작 메소드 (필요시 사용)
+  void restartUplift() {
+    isUpliftActive = true;
+    upliftTimer = 0.0;
   }
 }
