@@ -58,7 +58,7 @@ class Ball extends BodyComponent {
     if (body.isActive) {
       // Forge2D API에서는 fixture에 직접 접근할 수 있습니다
       final fixtures = body.fixtures;
-      
+
       // 모든 fixture의 restitution 값 갱신
       for (final fixture in fixtures) {
         fixture.restitution = restitution;

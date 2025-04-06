@@ -13,19 +13,19 @@ class Machine extends BodyComponent {
   late final Vector2 center;
 
   late final double radius;
-  
+
   // 상승기류 관련 속성 추가
   late final Vector2 forceOrigin; // 힘의 원천
-  late final double forceHeight;  // 힘이 영향을 미치는 높이
-  late final double forceWidth;  // 힘이 영향을 미치는 반경
-  late final double forceStrength;  // 힘의 세기
+  late final double forceHeight; // 힘이 영향을 미치는 높이
+  late final double forceWidth; // 힘이 영향을 미치는 반경
+  late final double forceStrength; // 힘의 세기
 
   Machine({required this.gameSize}) : super(renderBody: false) {
     center = Vector2(gameSize.x * 0.5, gameSize.y * 0.5);
     radius = gameSize.x * 0.3;
 
     final extraHeight = gameSize.y * 0.1;
-    
+
     // 상승기류 속성 초기화
     forceOrigin = Vector2(center.x, center.y - radius);
     forceHeight = 2 * (center.y - radius) + extraHeight;
@@ -39,9 +39,9 @@ class Machine extends BodyComponent {
     final body = world.createBody(bodyDef);
 
     // 원형 경계 생성
-    final segments = 64;  // 원을 구성할 세그먼트 수
+    final segments = 64; // 원을 구성할 세그먼트 수
     final angleStep = (2 * math.pi) / segments;
-    
+
     for (var i = 0; i < segments; i++) {
       final startAngle = i * angleStep;
       final endAngle = (i + 1) * angleStep;
@@ -70,17 +70,19 @@ class Machine extends BodyComponent {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    
+
     final centerOffset = Offset(center.x, center.y);
 
-    final fillPaint = Paint()
-      ..color = const Color.fromARGB(255, 240, 241, 243)!
-      ..style = PaintingStyle.fill;
+    final fillPaint =
+        Paint()
+          ..color = const Color.fromARGB(255, 240, 241, 243)!
+          ..style = PaintingStyle.fill;
 
-    final arcPaint = Paint()
-      ..color = const Color.fromARGB(255, 107, 112, 116)!
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+    final arcPaint =
+        Paint()
+          ..color = const Color.fromARGB(255, 107, 112, 116)!
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0;
 
     // 원형 경계 그리기
     final sweepAngle = 2 * math.pi - (exitEndAngle - exitStartAngle);
@@ -88,7 +90,7 @@ class Machine extends BodyComponent {
     canvas.drawArc(
       Rect.fromCircle(center: centerOffset, radius: radius),
       exitEndAngle, // 시작 각도
-      sweepAngle,   // 출구 부분을 제외한 나머지 부분
+      sweepAngle, // 출구 부분을 제외한 나머지 부분
       false,
       arcPaint,
     );
@@ -96,13 +98,13 @@ class Machine extends BodyComponent {
     _renderHole(canvas, centerOffset, radius);
     // 받침대
     _renderSupport(canvas, centerOffset, radius);
-
   }
 
   void _renderHole(Canvas canvas, Offset center, double radius) {
-    final Paint supportPaint = Paint()
-      ..color = const Color.fromARGB(255, 219, 219, 221)!
-      ..style = PaintingStyle.fill;
+    final Paint supportPaint =
+        Paint()
+          ..color = const Color.fromARGB(255, 219, 219, 221)!
+          ..style = PaintingStyle.fill;
 
     // 출구 양 끝점 계산
     final Offset leftExit = Offset(
@@ -129,14 +131,15 @@ class Machine extends BodyComponent {
 
     canvas.drawRect(supportRect, supportPaint);
   }
-  
+
   void _renderSupport(Canvas canvas, Offset center, double radius) {
-    final Paint basePaint = Paint()
-      ..color = const Color.fromARGB(80, 148, 68, 19)!
-      ..style = PaintingStyle.fill;
+    final Paint basePaint =
+        Paint()
+          ..color = const Color.fromARGB(80, 148, 68, 19)!
+          ..style = PaintingStyle.fill;
 
     // 사다리꼴 위치 및 크기 설정
-    final double topWidth = radius * 1.2;  // 윗변 (지지대보다 살짝 넓게)
+    final double topWidth = radius * 1.2; // 윗변 (지지대보다 살짝 넓게)
     final double bottomWidth = radius * 1.8; // 아랫변 (넓게 퍼지도록)
     final double height = radius * 0.4; // 사다리꼴 높이
 
@@ -144,19 +147,25 @@ class Machine extends BodyComponent {
     final double baseCenterY = center.dy + radius + height * 0.5;
 
     // 사다리꼴 꼭짓점 좌표
-    final Offset topLeft = Offset(center.dx - topWidth / 2, baseCenterY - height);
-    final Offset topRight = Offset(center.dx + topWidth / 2, baseCenterY - height);
+    final Offset topLeft = Offset(
+      center.dx - topWidth / 2,
+      baseCenterY - height,
+    );
+    final Offset topRight = Offset(
+      center.dx + topWidth / 2,
+      baseCenterY - height,
+    );
     final Offset bottomLeft = Offset(center.dx - bottomWidth / 2, baseCenterY);
     final Offset bottomRight = Offset(center.dx + bottomWidth / 2, baseCenterY);
 
-    final Path trapezoidPath = Path()
-      ..moveTo(topLeft.dx, topLeft.dy)
-      ..lineTo(topRight.dx, topRight.dy)
-      ..lineTo(bottomRight.dx, bottomRight.dy)
-      ..lineTo(bottomLeft.dx, bottomLeft.dy)
-      ..close();
+    final Path trapezoidPath =
+        Path()
+          ..moveTo(topLeft.dx, topLeft.dy)
+          ..lineTo(topRight.dx, topRight.dy)
+          ..lineTo(bottomRight.dx, bottomRight.dy)
+          ..lineTo(bottomLeft.dx, bottomLeft.dy)
+          ..close();
 
     canvas.drawPath(trapezoidPath, basePaint);
   }
-
 }
