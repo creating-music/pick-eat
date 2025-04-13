@@ -3,6 +3,7 @@ import 'package:pick_eat/design/theme.dart';
 import 'package:pick_eat/viewmodels/lotto_viewmodel.dart';
 import 'package:pick_eat/views/lotto_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -47,7 +48,11 @@ class _SplashScreenState extends State<SplashScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(width: double.infinity),
-                Icon(Icons.restaurant, size: 80, color: AppTheme.primaryColor),
+                SvgPicture.asset(
+                  'assets/images/pick-eat-logo.svg',
+                  width: 160,
+                  height: 160,
+                ),
                 const SizedBox(height: 24),
                 const Text(
                   'Pick Eat',
