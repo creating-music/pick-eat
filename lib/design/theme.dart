@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// 앱 전체에서 사용하는 디자인 토큰 모음
 class AppTheme {
   // 기본 색상 팔레트
-  static const Color primaryColor = Color(0xFF2196F3); // 메인 파란색
+  static const Color primaryColor = Color(0xFFEA5548); // 메인 살구색
   static const Color primaryLight = Color(0xFFE3F2FD); // 밝은 파란색 배경
   static const Color primaryDark = Color(0xFF1976D2); // 진한 파란색
   static const Color accentColor = Color(0xFFF44336); // 강조 빨간색 (가격 할인 등)
