@@ -38,9 +38,9 @@ class LotteryGame extends Forge2DGame {
 
     // 여러 개의 공 추가
     final random = Random();
-    final ballRadius = gameSize.x * 0.01;
+    final ballRadius = gameSize.x * 0.015;
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 86; i++) {
       final ball = Ball(
         initialPosition: Vector2(
           gameSize.x * 0.3 + random.nextDouble() * gameSize.x * 0.4,
