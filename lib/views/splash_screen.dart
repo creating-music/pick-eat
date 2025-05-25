@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Consumer<LottoViewModel>(
       builder: (context, viewModel, child) {
         return Scaffold(
-          backgroundColor: AppTheme.backgroundColor,
+          backgroundColor: AppTheme.primaryColor,
           body: SafeArea(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
               children: [
                 const SizedBox(width: double.infinity),
                 SvgPicture.asset(
-                  'assets/images/pick-eat-logo.svg',
+                  'assets/images/pick-eat-logo-white.svg',
                   width: 160,
                   height: 160,
                 ),
