@@ -176,19 +176,34 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
         return Scaffold(
           backgroundColor: AppTheme.backgroundColor,
           appBar: AppBar(
-            title: const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Pick Eat',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryColor,
-                ),
+            title: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '추천 메뉴 뽑기',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                  Text(
+                    '오늘 먹을 메뉴를 뽑아보세요',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
               ),
             ),
-            backgroundColor: Colors.transparent,
+            backgroundColor: Colors.red.shade400,
             elevation: 0,
             centerTitle: false,
+            toolbarHeight: 80,
           ),
           body: SafeArea(
             child: Column(
@@ -210,14 +225,91 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
                           : const LotteryMachine(),
                 ),
 
-                // 액션 버튼
+                // 액션 버튼들
                 if (!viewModel.isLotteryRunning)
                   Padding(
                     padding: const EdgeInsets.all(24.0),
-                    child: ElevatedButton(
-                      style: AppTheme.primaryButtonStyle,
-                      onPressed: () => _startLottery(),
-                      child: Text('메뉴 뽑기', style: AppTheme.buttonText),
+                    child: Column(
+                      children: [
+                        // 메인 뽑기 버튼
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade400,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () => _startLottery(),
+                            child: const Text(
+                              '뽑기',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // 하단 두 개 버튼
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 45,
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red.shade400,
+                                    side: BorderSide(color: Colors.red.shade400),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(22.5),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    // TODO: 선호 선택 기능 구현
+                                  },
+                                  child: const Text(
+                                    '선호 선택',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: SizedBox(
+                                height: 45,
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red.shade400,
+                                    side: BorderSide(color: Colors.red.shade400),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(22.5),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    // TODO: 블록 선택 기능 구현
+                                  },
+                                  child: const Text(
+                                    '불호 선택',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
               ],
