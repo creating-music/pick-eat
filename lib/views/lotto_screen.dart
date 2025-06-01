@@ -7,7 +7,7 @@ import '../game/lottery_game.dart';
 import '../viewmodels/lotto_viewmodel.dart';
 import '../widgets/lottery_machine.dart';
 import '../widgets/preference_bottom_sheet.dart';
-import 'result_screen.dart';
+import '../widgets/menu_card.dart';
 
 class LottoScreen extends StatefulWidget {
   const LottoScreen({super.key});
@@ -58,34 +58,14 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
       _viewModel = Provider.of<LottoViewModel>(context, listen: false);
       _viewModel.onGameComplete = () {
         if (mounted) {
-          _navigateToResult(context, _viewModel);
+          // 게임 완료 시 게임 위젯 숨기기만 함 (네비게이션 제거)
+          setState(() {
+            _showGameWidget = false;
+          });
+          _cleanupGameInstance();
         }
       };
       _callbackRegistered = true;
-    }
-  }
-
-  // 메뉴 선택 후 결과 화면으로 이동하는 메서드
-  void _navigateToResult(BuildContext context, LottoViewModel viewModel) async {
-    // 게임 위젯 즉시 숨기기
-    if (mounted) {
-      setState(() {
-        _showGameWidget = false;
-      });
-    }
-
-    // UI 업데이트 보장
-    await Future.microtask(() {});
-
-    // 게임 인스턴스 정리
-    _cleanupGameInstance();
-
-    if (mounted && viewModel.selectedMenu != null) {
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ResultScreen(menu: viewModel.selectedMenu!),
-        ),
-      );
     }
   }
 
@@ -114,7 +94,7 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
       // 새 게임 인스턴스 생성
       final instance = LotteryGame();
 
-      // 공 선택 완료 시 히스토리 처리 및 결과 화면 이동
+      // 공 선택 완료 시 히스토리 처리
       instance.onBallSelected = () async {
         if (_viewModel.isLotteryRunning) {
           // 뽑기 상태 업데이트
@@ -126,9 +106,9 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
             await _viewModel.addMenuToHistory(_viewModel.selectedMenu!);
           }
 
-          // 결과 화면으로 이동
+          // 게임 완료 콜백 호출 (결과 화면 표시용)
           if (mounted) {
-            _navigateToResult(context, _viewModel);
+            _viewModel.onGameComplete?.call();
           }
         }
       };
@@ -165,6 +145,17 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
     if (mounted && _gameInstance != null && _viewModel.isLotteryRunning) {
       _gameInstance!.startLottery();
     }
+  }
+
+  // 다시 뽑기 메서드
+  void _retryLottery() async {
+    setState(() {
+      _showGameWidget = false;
+    });
+    _cleanupGameInstance();
+    
+    // 리셋 후 바로 새로운 뽑기 시작
+    await _startLottery();
   }
 
   // 선호도 선택 BottomSheet 표시
@@ -213,11 +204,14 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
           appBar: AppBar(
             title: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '추천 메뉴 뽑기',
+                    // 메뉴가 뽑힌 상태에서는 다른 제목 표시
+                    viewModel.selectedMenu != null && !viewModel.isLotteryRunning
+                        ? '오늘의 추천 메뉴'
+                        : '추천 메뉴 뽑기',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -225,7 +219,10 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
                     ),
                   ),
                   Text(
-                    '오늘 먹을 메뉴를 뽑아보세요',
+                    // 메뉴가 뽑힌 상태에서는 다른 설명 표시
+                    viewModel.selectedMenu != null && !viewModel.isLotteryRunning
+                        ? '이런 메뉴는 어떠신가요?'
+                        : '오늘 먹을 메뉴를 뽑아보세요',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
@@ -243,117 +240,143 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
           body: SafeArea(
             child: Column(
               children: [
-                // 뽑기 머신 (게임 영역)
+                // 메인 컨텐츠 영역 - 조건부 렌더링
                 Expanded(
-                  child:
-                      viewModel.isLotteryRunning
-                          ? _showGameWidget && _gameInstance != null
-                              ? Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                ),
-                                child: ClipRect(
-                                  child: GameWidget(game: _gameInstance!),
-                                ),
-                              )
-                              : const Center(child: CircularProgressIndicator())
-                          : const LotteryMachine(),
+                  child: _buildMainContent(viewModel),
                 ),
 
-                // 액션 버튼들
-                if (!viewModel.isLotteryRunning)
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      children: [
-                        // 메인 뽑기 버튼
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red.shade400,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              elevation: 0,
-                            ),
-                            onPressed: () => _startLottery(),
-                            child: const Text(
-                              '뽑기',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // 하단 두 개 버튼
-                        Row(
-                          children: [
-                            Expanded(
-                              child: SizedBox(
-                                height: 45,
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.red.shade400,
-                                    side: BorderSide(color: Colors.red.shade400),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(22.5),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    // TODO: 선호 선택 기능 구현
-                                    _showPreferenceBottomSheet();
-                                  },
-                                  child: const Text(
-                                    '선호 선택',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: SizedBox(
-                                height: 45,
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.red.shade400,
-                                    side: BorderSide(color: Colors.red.shade400),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(22.5),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    // TODO: 블록 선택 기능 구현
-                                    _showDislikeBottomSheet();
-                                  },
-                                  child: const Text(
-                                    '불호 선택',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                // 하단 버튼 영역 - 조건부 렌더링
+                _buildBottomButtons(viewModel),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  // 메인 컨텐츠 빌드 (조건부 렌더링)
+  Widget _buildMainContent(LottoViewModel viewModel) {
+    // 뽑힌 메뉴가 있고 뽑기가 실행중이 아닌 경우 → 결과 카드 표시
+    if (viewModel.selectedMenu != null && !viewModel.isLotteryRunning) {
+      return Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 30),
+            MenuCard(menu: viewModel.selectedMenu!),
+            const Spacer(),
+          ],
+        ),
+      );
+    }
+    
+    // 뽑기 실행 중인 경우 → 게임 위젯 표시
+    if (viewModel.isLotteryRunning) {
+      return _showGameWidget && _gameInstance != null
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: ClipRect(
+                child: GameWidget(game: _gameInstance!),
+              ),
+            )
+          : const Center(child: CircularProgressIndicator());
+    }
+    
+    // 기본 상태 → 로또 머신 표시
+    return const LotteryMachine();
+  }
+
+  // 하단 버튼 빌드 (조건부 렌더링)
+  Widget _buildBottomButtons(LottoViewModel viewModel) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        children: [
+          // 메인 버튼
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade400,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                elevation: 0,
+              ),
+              onPressed: viewModel.isLotteryRunning 
+                  ? null 
+                  : (viewModel.selectedMenu != null 
+                      ? _retryLottery 
+                      : _startLottery),
+              child: Text(
+                viewModel.selectedMenu != null ? '다시 뽑기' : '뽑기',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          
+          // 뽑기 실행 중이 아닐 때만 하단 두 버튼 표시
+          if (!viewModel.isLotteryRunning) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 45,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red.shade400,
+                        side: BorderSide(color: Colors.red.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22.5),
+                        ),
+                      ),
+                      onPressed: _showPreferenceBottomSheet,
+                      child: const Text(
+                        '선호 선택',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SizedBox(
+                    height: 45,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red.shade400,
+                        side: BorderSide(color: Colors.red.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22.5),
+                        ),
+                      ),
+                      onPressed: _showDislikeBottomSheet,
+                      child: const Text(
+                        '불호 선택',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
