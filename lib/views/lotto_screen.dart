@@ -6,6 +6,7 @@ import '../design/theme.dart';
 import '../game/lottery_game.dart';
 import '../viewmodels/lotto_viewmodel.dart';
 import '../widgets/lottery_machine.dart';
+import '../widgets/preference_bottom_sheet.dart';
 import 'result_screen.dart';
 
 class LottoScreen extends StatefulWidget {
@@ -166,6 +167,40 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
     }
   }
 
+  // 선호도 선택 BottomSheet 표시
+  void _showPreferenceBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => PreferenceBottomSheet(
+        title: '선호 확인',
+        isPreference: true,
+        initialSelectedPreferences: _viewModel.preferredCategories,
+        onConfirmPreferences: (selectedCategories) {
+          _viewModel.updatePreferredCategories(selectedCategories);
+        },
+      ),
+    );
+  }
+
+  // 불호도 선택 BottomSheet 표시
+  void _showDislikeBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => PreferenceBottomSheet(
+        title: '불호 확인',
+        isPreference: false,
+        initialSelectedDislikes: _viewModel.dislikedCategories,
+        onConfirmDislikes: (selectedCategories) {
+          _viewModel.updateDislikedCategories(selectedCategories);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<LottoViewModel>(
@@ -271,6 +306,7 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
                                   ),
                                   onPressed: () {
                                     // TODO: 선호 선택 기능 구현
+                                    _showPreferenceBottomSheet();
                                   },
                                   child: const Text(
                                     '선호 선택',
@@ -296,6 +332,7 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
                                   ),
                                   onPressed: () {
                                     // TODO: 블록 선택 기능 구현
+                                    _showDislikeBottomSheet();
                                   },
                                   child: const Text(
                                     '불호 선택',
