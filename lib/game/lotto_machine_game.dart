@@ -1,0 +1,154 @@
+import 'dart:math';
+
+import 'package:flame/camera.dart';
+import 'package:flame_forge2d/flame_forge2d.dart';
+import 'package:flame_svg/flame_svg.dart';
+import 'package:flutter/material.dart';
+
+class LottoMachineGame extends Forge2DGame {
+  final Vector2 widgetSize;
+
+  LottoMachineGame({required this.widgetSize}) : super(gravity: Vector2(0, 10));
+
+  @override
+  Color backgroundColor() => Colors.white;
+
+  @override
+  Future<void> onLoad() async {
+    camera.viewport = FixedResolutionViewport(resolution: widgetSize);
+
+    ///////////////////////// machine ///////////////////////////
+    final bodyRadius = widgetSize.x / 7;
+
+    final bodyCenter = Vector2(widgetSize.x / 2, widgetSize.y / 2);
+    add(MachineBody(startPosition: bodyCenter, radius: bodyRadius));
+
+    /////////////////////////// ball ////////////////////////////
+    for (int i = 0; i < 8; i++) {
+      final ballRadius = widgetSize.x / 50;
+      final center = Vector2(
+        widgetSize.x / 2 + i * 0.001,
+        widgetSize.y / 2 + i * 0.001,
+      );
+      add(Ball(startPosition: center, radius: ballRadius));
+    }
+  }
+}
+
+class Ball extends BodyComponent {
+  final Vector2 startPosition;
+  final double radius; // 👉 크기를 외부에서 지정
+
+  late final Svg svg;
+
+  Ball({required this.startPosition, required this.radius});
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    // TODO 색깔 랜덤 로직 추가
+    svg = await Svg.load('images/lotto/ball-blue.svg');
+  }
+
+  @override
+  Body createBody() {
+    final shape = CircleShape()..radius = radius;
+    final fixtureDef =
+        FixtureDef(shape)
+          ..density = 1.0
+          ..restitution = 0.8
+          ..friction = 0.5;
+
+    final bodyDef =
+        BodyDef()
+          ..type = BodyType.dynamic
+          ..position = startPosition;
+
+    return world.createBody(bodyDef)..createFixture(fixtureDef);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+
+    final size = Vector2.all(radius * 2);
+
+    canvas.save();
+
+    // 회전 중심을 원 중심으로 이동
+    canvas.translate(0, 0);
+
+    // 바디의 회전 각도 적용 (radian 단위)
+    canvas.rotate(body.angle);
+
+    // 이미지 그릴 때 중심 정렬을 위해 반지름만큼 이동
+    canvas.translate(-radius, -radius);
+
+    svg.render(canvas, size);
+
+    canvas.restore();
+  }
+}
+
+class MachineBody extends BodyComponent {
+  final Vector2 startPosition;
+  final double radius; // 👉 크기를 외부에서 지정
+
+  late final Svg svg;
+
+  MachineBody({required this.startPosition, required this.radius});
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    svg = await Svg.load('images/lotto/machine-body.svg');
+  }
+
+  @override
+  Body createBody() {
+    final bodyDef =
+        BodyDef()
+          ..type = BodyType.static
+          ..position = startPosition;
+
+    final body = world.createBody(bodyDef);
+
+    final int segmentCount = 128;
+    final double angleStep = 2 * pi / segmentCount;
+    final double wallThickness = radius * 0.01; // 얇은 벽 두께
+
+    for (int i = 0; i < segmentCount; i++) {
+      final angle = i * angleStep;
+      final x = cos(angle) * radius;
+      final y = sin(angle) * radius;
+
+      final wallPosition = Vector2(x, y);
+      final rotation = angle;
+
+      final shape =
+          PolygonShape()..setAsBox(
+            wallThickness / 2,
+            radius * 0.05, // 세로 길이
+            wallPosition, // 중심 위치 (MachineBody 기준 상대 좌표)
+            rotation, // 회전 각도
+          );
+
+      final fixtureDef = FixtureDef(shape)
+        ..friction = 0.9
+        ..restitution = 0.5;
+
+      body.createFixture(fixtureDef);
+    }
+
+    return body;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+
+    final size = Vector2.all(radius * 2);
+    canvas.translate(-radius, -radius);
+    svg.render(canvas, size);
+  }
+}
