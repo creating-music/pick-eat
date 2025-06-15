@@ -1,9 +1,9 @@
 import 'dart:math';
-
 import 'package:flame/camera.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
+import 'package:pick_eat/game/constant/ball_color.dart';
 
 class LottoMachineGame extends Forge2DGame {
   final Vector2 widgetSize;
@@ -24,13 +24,14 @@ class LottoMachineGame extends Forge2DGame {
     add(MachineBody(startPosition: bodyCenter, radius: bodyRadius));
 
     /////////////////////////// ball ////////////////////////////
-    for (int i = 0; i < 8; i++) {
+    for (final color in BallColor.values) {
       final ballRadius = widgetSize.x / 50;
+      final index = BallColor.values.indexOf(color);
       final center = Vector2(
-        widgetSize.x / 2 + i * 0.001,
-        widgetSize.y / 2 + i * 0.001,
+        widgetSize.x / 2 + index * 0.001,
+        widgetSize.y / 2 + index * 0.001,
       );
-      add(Ball(startPosition: center, radius: ballRadius));
+      add(Ball(startPosition: center, radius: ballRadius, color: color));
     }
   }
 }
@@ -38,16 +39,21 @@ class LottoMachineGame extends Forge2DGame {
 class Ball extends BodyComponent {
   final Vector2 startPosition;
   final double radius; // 👉 크기를 외부에서 지정
+  final BallColor color;
 
   late final Svg svg;
 
-  Ball({required this.startPosition, required this.radius});
+  Ball({
+    required this.startPosition,
+    required this.radius,
+    required this.color,
+  });
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
     // TODO 색깔 랜덤 로직 추가
-    svg = await Svg.load('images/lotto/ball-blue.svg');
+    svg = await Svg.load(color.imagePath);
   }
 
   @override
@@ -122,6 +128,17 @@ class MachineBody extends BodyComponent {
       final x = cos(angle) * radius;
       final y = sin(angle) * radius;
 
+      final double exitStartAngle = (75 / 180) * pi; // 출구 시작 각도 (하단 중앙)
+      final double exitEndAngle = (105 / 180) * pi;
+
+      final startAngle = i * angleStep;
+      final endAngle = (i + 1) * angleStep;
+
+      // 구멍
+      if (startAngle >= exitStartAngle && startAngle <= exitEndAngle) {
+        continue;
+      }
+
       final wallPosition = Vector2(x, y);
       final rotation = angle;
 
@@ -133,9 +150,10 @@ class MachineBody extends BodyComponent {
             rotation, // 회전 각도
           );
 
-      final fixtureDef = FixtureDef(shape)
-        ..friction = 0.9
-        ..restitution = 0.5;
+      final fixtureDef =
+          FixtureDef(shape)
+            ..friction = 0.9
+            ..restitution = 0.5;
 
       body.createFixture(fixtureDef);
     }
