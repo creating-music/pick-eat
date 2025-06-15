@@ -28,6 +28,12 @@ class LottoMachineGame extends Forge2DGame {
         radius: bodyRadius / 2,
       ),
     );
+    add(
+      MachineBottomBack(
+        position: bodyCenter + Vector2(0, bodyRadius * 1.47),
+        radius: bodyRadius / 2,
+      ),
+    );
 
     /////////////////////////// ball ////////////////////////////
     for (final color in BallColor.values) {
@@ -245,6 +251,40 @@ class MachineBottom extends BodyComponent {
   void render(Canvas canvas) {
     super.render(canvas);
     double diff = radius * 4.8;
+    canvas.translate(-diff / 2, -diff / 2);
+    final size = Vector2.all(diff);
+    svg.render(canvas, size);
+  }
+}
+
+class MachineBottomBack extends BodyComponent {
+  final Vector2 position;
+  final double radius;
+  late final Svg svg;
+
+  MachineBottomBack({required this.position, required this.radius});
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    svg = await Svg.load('images/lotto/machine/machine-bottom-back.svg');
+  }
+
+  @override
+  Body createBody() {
+    final bodyDef =
+        BodyDef()
+          ..type = BodyType.static
+          ..position = position;
+
+    final body = world.createBody(bodyDef);
+    return body;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    double diff = radius * 3;
     canvas.translate(-diff / 2, -diff / 2);
     final size = Vector2.all(diff);
     svg.render(canvas, size);
