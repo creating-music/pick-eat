@@ -22,10 +22,16 @@ class LottoMachineGame extends Forge2DGame {
 
     final bodyCenter = Vector2(widgetSize.x / 2, widgetSize.y / 2);
     add(MachineBody(startPosition: bodyCenter, radius: bodyRadius));
+    add(
+      MachineHat(
+        position: bodyCenter - Vector2(0, bodyRadius),
+        radius: bodyRadius / 2,
+      ),
+    );
 
     /////////////////////////// ball ////////////////////////////
     for (final color in BallColor.values) {
-      final ballRadius = widgetSize.x / 50;
+      final ballRadius = widgetSize.x / 40;
       final index = BallColor.values.indexOf(color);
       final center = Vector2(
         widgetSize.x / 2 + index * 0.001,
@@ -52,7 +58,6 @@ class Ball extends BodyComponent {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    // TODO 색깔 랜덤 로직 추가
     svg = await Svg.load(color.imagePath);
   }
 
@@ -107,7 +112,7 @@ class MachineBody extends BodyComponent {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    svg = await Svg.load('images/lotto/machine-body.svg');
+    svg = await Svg.load('images/lotto/machine/machine-body.svg');
   }
 
   @override
@@ -132,7 +137,6 @@ class MachineBody extends BodyComponent {
       final double exitEndAngle = (105 / 180) * pi;
 
       final startAngle = i * angleStep;
-      final endAngle = (i + 1) * angleStep;
 
       // 구멍
       if (startAngle >= exitStartAngle && startAngle <= exitEndAngle) {
@@ -167,6 +171,40 @@ class MachineBody extends BodyComponent {
 
     final size = Vector2.all(radius * 2);
     canvas.translate(-radius, -radius);
+    svg.render(canvas, size);
+  }
+}
+
+class MachineHat extends BodyComponent {
+  final Vector2 position;
+  final double radius;
+  late final Svg svg;
+
+  MachineHat({required this.position, required this.radius});
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    svg = await Svg.load('images/lotto/machine/machine-hat.svg');
+  }
+
+  @override
+  Body createBody() {
+    final bodyDef =
+        BodyDef()
+          ..type = BodyType.static
+          ..position = position;
+
+    final body = world.createBody(bodyDef);
+    return body;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    double diff = radius * 1.6;
+    canvas.translate(-diff / 2, -diff / 2);
+    final size = Vector2.all(diff);
     svg.render(canvas, size);
   }
 }
