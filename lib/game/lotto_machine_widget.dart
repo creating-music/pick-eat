@@ -18,7 +18,6 @@ class LottoMachineWidget extends StatelessWidget {
         height: height,
         child: GameWidget(
           game: LottoMachineGame(widgetSize: Vector2(width, height)),
-          backgroundBuilder: (context) => const ColoredBox(color: Colors.white),
         ),
       ),
     );

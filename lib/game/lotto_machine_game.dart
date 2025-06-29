@@ -234,6 +234,8 @@ class MachineBottom extends BodyComponent {
   Future<void> onLoad() async {
     await super.onLoad();
     svg = await Svg.load('images/lotto/machine/machine-bottom.svg');
+    setColor(Colors.black);
+    setAlpha(0);
   }
 
   @override
@@ -244,6 +246,56 @@ class MachineBottom extends BodyComponent {
           ..position = position;
 
     final body = world.createBody(bodyDef);
+
+    // 숨겨진 가상 충돌 바닥 추가
+    final bottomShape =
+        PolygonShape()..setAsBox(
+          (radius * 2.5) / 2,
+          (radius * 0.2) / 2,
+          Vector2(0, radius * 1.1),
+          0,
+        );
+
+    final bottomFixtureDef =
+        FixtureDef(bottomShape)
+          ..isSensor =
+              false // 충돌 감지는 하지만 렌더링은 안함
+          ..friction = 0.5;
+
+    body.createFixture(bottomFixtureDef);
+
+    final leftShape =
+        PolygonShape()..setAsBox(
+          (radius * 0.5) / 2,
+          (radius * 2.5) / 2,
+          Vector2(-radius / 1.5, radius * 0.2),
+          0,
+        );
+
+    final leftFixtureDef =
+        FixtureDef(leftShape)
+          ..isSensor =
+              false // 충돌 감지는 하지만 렌더링은 안함
+          ..friction = 0.5;
+
+    body.createFixture(leftFixtureDef);
+
+    final rightShape =
+        PolygonShape()..setAsBox(
+          (radius * 0.5) / 2,
+          (radius * 2.5) / 2,
+          Vector2(radius / 1.5, radius * 0.2),
+          0,
+        );
+
+    final rightFixtureDef =
+        FixtureDef(rightShape)
+          ..isSensor =
+              false // 충돌 감지는 하지만 렌더링은 안함
+          ..friction = 0.5;
+
+    body.createFixture(rightFixtureDef);
+
     return body;
   }
 
