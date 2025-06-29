@@ -36,12 +36,19 @@ class LottoMachineGame extends Forge2DGame {
     );
 
     /////////////////////////// ball ////////////////////////////
-    for (final color in BallColor.values) {
+    List<int> numbers = List.generate(
+      BallColor.values.length,
+      (index) => index,
+    );
+    numbers.shuffle(Random());
+
+    for (int i = 0; i < BallColor.values.length; i++) {
+      final color = BallColor.values[i];
       final ballRadius = widgetSize.x / 40;
-      final index = BallColor.values.indexOf(color);
+      final index = numbers[i];
       final center = Vector2(
-        widgetSize.x / 2 + index * 0.001,
-        widgetSize.y / 2 + index * 0.001,
+        widgetSize.x / 2 + index * 6 * (index % 2 == 0 ? 1 : -1),
+        widgetSize.y / 2 + index * 6 * (index % 3 == 0 ? 1 : -1),
       );
       add(Ball(startPosition: center, radius: ballRadius, color: color));
     }
