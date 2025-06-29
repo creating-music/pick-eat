@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flame/camera.dart';
+import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,7 @@ import 'package:pick_eat/game/constant/ball_color.dart';
 class LottoMachineGame extends Forge2DGame {
   final Vector2 widgetSize;
 
-  LottoMachineGame({required this.widgetSize}) : super(gravity: Vector2(0, 10));
+  LottoMachineGame({required this.widgetSize}) : super(gravity: Vector2(0, 50));
 
   @override
   Color backgroundColor() => Colors.white;
@@ -22,12 +23,6 @@ class LottoMachineGame extends Forge2DGame {
 
     final bodyCenter = Vector2(widgetSize.x / 2, widgetSize.y / 2);
     add(MachineBody(startPosition: bodyCenter, radius: bodyRadius));
-    add(
-      MachineHat(
-        position: bodyCenter - Vector2(0, bodyRadius),
-        radius: bodyRadius / 2,
-      ),
-    );
     add(
       MachineBottomBack(
         position: bodyCenter + Vector2(0, bodyRadius * 1.47),
@@ -47,11 +42,20 @@ class LottoMachineGame extends Forge2DGame {
       final ballRadius = widgetSize.x / 40;
       final index = numbers[i];
       final center = Vector2(
-        widgetSize.x / 2 + index * 6 * (index % 2 == 0 ? 1 : -1),
-        widgetSize.y / 2 + index * 6 * (index % 3 == 0 ? 1 : -1),
+        widgetSize.x / 2 +
+            widgetSize.x * (index * 0.01 * (index % 2 == 0 ? 1 : -1)),
+        widgetSize.y / 2 +
+            widgetSize.x * (index * 0.01 * (index % 3 == 0 ? 1 : -1)),
       );
       add(Ball(startPosition: center, radius: ballRadius, color: color));
     }
+    //////////////////////// Machine Hat //////////////////
+    add(
+      MachineHat(
+        position: bodyCenter - Vector2(0, bodyRadius),
+        radius: bodyRadius / 2,
+      ),
+    );
 
     ////////////////////////// Machine Bottom ///////////////////
     add(
@@ -60,6 +64,47 @@ class LottoMachineGame extends Forge2DGame {
         radius: bodyRadius / 2,
       ),
     );
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    super.update(dt);
+    super.update(dt);
+    // MachineBody 기준 중심에서 아래쪽으로 일정 영역 설정
+    final bodyRadius = widgetSize.x / 7;
+    final bodyCenterX = widgetSize.x / 2;
+    final bodyCenterY = widgetSize.y / 2;
+
+    final double windZoneMTop = bodyCenterY - bodyRadius * 0.3;
+    final double windZoneMBottom = bodyCenterY + bodyRadius * 1.3;
+    final double windZoneMLeft = bodyCenterX - bodyRadius * 0.5;
+    final double windZoneMRight = bodyCenterX + bodyRadius * 0.5;
+    final double windZoneTop = bodyCenterY - bodyRadius * 0.1;
+    final double windZoneBottom = bodyCenterY + bodyRadius * 0.7;
+    final double windZoneLeft = bodyCenterX - bodyRadius * 0.3;
+    final double windZoneRight = bodyCenterX + bodyRadius * 0.3;
+    // Ball 컴포넌트들에게 바람을 적용
+    for (final component in children) {
+      if (component is Ball) {
+        final ball = component;
+        final body = ball.body;
+
+        if (body.position.y >= windZoneMTop &&
+            body.position.y <= windZoneMBottom &&
+            body.position.x >= windZoneMLeft &&
+            body.position.x <= windZoneMRight) {
+          if (body.position.y >= windZoneTop &&
+              body.position.y <= windZoneBottom &&
+              body.position.x >= windZoneLeft &&
+              body.position.x <= windZoneRight) {
+            body.applyForce(Vector2(0, -200000000));
+          } else {
+            body.applyForce(Vector2(0, -10000000));
+          }
+        }
+      }
+    }
   }
 }
 
@@ -87,7 +132,7 @@ class Ball extends BodyComponent {
     final shape = CircleShape()..radius = radius;
     final fixtureDef =
         FixtureDef(shape)
-          ..density = 1.0
+          ..density = 150.0
           ..restitution = 0.8
           ..friction = 0.5;
 
