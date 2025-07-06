@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pick_eat/views/lotto_screen.dart';
+import 'package:pick_eat/views/temp.dart';
 import 'package:provider/provider.dart';
 
 import '../design/theme.dart';
@@ -100,7 +101,7 @@ class ResultScreen extends StatelessWidget {
                               // 홈 화면으로 돌아가기
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => LottoScreen(),
+                                  builder: (context) => TempScreen(),
                                 ),
                               );
                             },

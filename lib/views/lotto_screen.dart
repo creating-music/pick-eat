@@ -194,21 +194,21 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
             child: Column(
               children: [
                 // 뽑기 머신 (게임 영역)
-                Expanded(
-                  child:
-                      viewModel.isLotteryRunning
-                          ? _showGameWidget && _gameInstance != null
-                              ? Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                ),
-                                child: ClipRect(
-                                  child: GameWidget(game: _gameInstance!),
-                                ),
-                              )
-                              : const Center(child: CircularProgressIndicator())
-                          : const LotteryMachine(),
-                ),
+                // Expanded(
+                //   child:
+                //       viewModel.isLotteryRunning
+                //           ? _showGameWidget && _gameInstance != null
+                //               ? Padding(
+                //                 padding: const EdgeInsets.symmetric(
+                //                   horizontal: 24,
+                //                 ),
+                //                 child: ClipRect(
+                //                   child: GameWidget(game: _gameInstance!),
+                //                 ),
+                //               )
+                //               : const Center(child: CircularProgressIndicator())
+                //           : const LotteryMachine(),
+                // ),
 
                 // 액션 버튼
                 if (!viewModel.isLotteryRunning)
