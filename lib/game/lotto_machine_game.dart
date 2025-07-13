@@ -19,9 +19,8 @@ class LottoMachineGame extends Forge2DGame {
     camera.viewport = FixedResolutionViewport(resolution: widgetSize);
 
     ///////////////////////// machine ///////////////////////////
-    final bodyRadius = widgetSize.x / 7;
-
-    final bodyCenter = Vector2(widgetSize.x / 2, widgetSize.y / 2);
+    final bodyRadius = min(widgetSize.x / 4, widgetSize.y / 4);
+    final bodyCenter = Vector2(widgetSize.x / 2, widgetSize.y / 2.5);
     add(MachineBody(startPosition: bodyCenter, radius: bodyRadius));
     add(
       MachineBottomBack(
@@ -39,13 +38,15 @@ class LottoMachineGame extends Forge2DGame {
 
     for (int i = 0; i < BallColor.values.length; i++) {
       final color = BallColor.values[i];
-      final ballRadius = widgetSize.x / 40;
+      final ballRadius = min(widgetSize.x / 23, widgetSize.y / 23);
       final index = numbers[i];
       final center = Vector2(
         widgetSize.x / 2 +
-            widgetSize.x * (index * 0.01 * (index % 2 == 0 ? 1 : -1)),
-        widgetSize.y / 2 +
-            widgetSize.x * (index * 0.01 * (index % 3 == 0 ? 1 : -1)),
+            min(widgetSize.x, widgetSize.y) *
+                (index * 0.01 * (index % 2 == 0 ? 1 : -1)),
+        widgetSize.y / 2.5 +
+            min(widgetSize.x, widgetSize.y) *
+                (index * 0.01 * (index % 3 == 0 ? 1 : -1)),
       );
       add(Ball(startPosition: center, radius: ballRadius, color: color));
     }
@@ -72,18 +73,18 @@ class LottoMachineGame extends Forge2DGame {
     super.update(dt);
     super.update(dt);
     // MachineBody 기준 중심에서 아래쪽으로 일정 영역 설정
-    final bodyRadius = widgetSize.x / 7;
+    final bodyRadius = min(widgetSize.x / 5, widgetSize.y / 5);
     final bodyCenterX = widgetSize.x / 2;
-    final bodyCenterY = widgetSize.y / 2;
+    final bodyCenterY = widgetSize.y / 2.5;
 
-    final double windZoneMTop = bodyCenterY - bodyRadius * 0.3;
-    final double windZoneMBottom = bodyCenterY + bodyRadius * 1.3;
-    final double windZoneMLeft = bodyCenterX - bodyRadius * 0.5;
-    final double windZoneMRight = bodyCenterX + bodyRadius * 0.5;
-    final double windZoneTop = bodyCenterY - bodyRadius * 0.1;
-    final double windZoneBottom = bodyCenterY + bodyRadius * 0.7;
-    final double windZoneLeft = bodyCenterX - bodyRadius * 0.3;
-    final double windZoneRight = bodyCenterX + bodyRadius * 0.3;
+    final double windZoneMTop = bodyCenterY - bodyRadius * 1.5;
+    final double windZoneMBottom = bodyCenterY + bodyRadius * 1.5;
+    final double windZoneMLeft = bodyCenterX - bodyRadius * 1;
+    final double windZoneMRight = bodyCenterX + bodyRadius * 1;
+    final double windZoneTop = bodyCenterY - bodyRadius * 0.2;
+    final double windZoneBottom = bodyCenterY + bodyRadius * 0.8;
+    final double windZoneLeft = bodyCenterX - bodyRadius * 0.4;
+    final double windZoneRight = bodyCenterX + bodyRadius * 0.4;
     // Ball 컴포넌트들에게 바람을 적용
     for (final component in children) {
       if (component is Ball) {
