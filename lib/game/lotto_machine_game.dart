@@ -1,12 +1,13 @@
 import 'dart:math';
 import 'package:flame/camera.dart';
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:pick_eat/game/constant/ball_color.dart';
 
-class LottoMachineGame extends Forge2DGame {
+class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
   final Vector2 widgetSize;
 
   LottoMachineGame({required this.widgetSize}) : super(gravity: Vector2(0, 50));
@@ -109,12 +110,26 @@ class LottoMachineGame extends Forge2DGame {
   }
 }
 
+class BallHitbox extends PositionComponent with CollisionCallbacks {
+  final double radius;
+  final BallColor ballColor;
+
+  BallHitbox({required this.radius, required this.ballColor});
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    add(CircleHitbox(radius: radius));
+  }
+}
+
 class Ball extends BodyComponent {
   final Vector2 startPosition;
   final double radius; // 👉 크기를 외부에서 지정
   final BallColor color;
 
   late final Svg svg;
+  late final BallHitbox ballHitbox;
 
   Ball({
     required this.startPosition,
@@ -126,6 +141,17 @@ class Ball extends BodyComponent {
   Future<void> onLoad() async {
     await super.onLoad();
     svg = await Svg.load(color.imagePath);
+
+    // 별도의 PositionComponent로 hitbox 관리
+    ballHitbox = BallHitbox(radius: radius, ballColor: color);
+    add(ballHitbox);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    // hitbox 위치를 body 위치와 동기화
+    ballHitbox.position = body.position;
   }
 
   @override
@@ -276,10 +302,50 @@ class MachineHat extends BodyComponent {
   }
 }
 
+class MachineBottomHitbox extends PositionComponent with CollisionCallbacks {
+  final double radius;
+  final Set<BallHitbox> _collidedBalls = <BallHitbox>{};
+
+  MachineBottomHitbox({required this.radius});
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    // bottomShape에 해당하는 RectangleHitbox 추가
+    add(
+      RectangleHitbox(
+        size: Vector2(radius * 2.5, radius * 0.2),
+        position: Vector2(0, radius * 1.1),
+        anchor: Anchor.center,
+      ),
+    );
+  }
+
+  @override
+  bool onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    if (other is BallHitbox) {
+      // 이미 충돌한 Ball인지 확인
+      if (!_collidedBalls.contains(other)) {
+        _collidedBalls.add(other);
+
+        // TODO: 화면 전환 함수 여기에 넣기.
+
+        // 1-2초 지연 후 출력
+        Future.delayed(Duration(seconds: 1), () {
+          debugPrint('Ball이 MachineBottom의 bottomShape에 충돌했습니다!');
+          debugPrint('충돌한 Ball 색상: ${other.ballColor}');
+        });
+      }
+    }
+    return true;
+  }
+}
+
 class MachineBottom extends BodyComponent {
   final Vector2 position;
   final double radius;
   late final Svg svg;
+  late final MachineBottomHitbox bottomHitbox;
 
   MachineBottom({required this.position, required this.radius});
 
@@ -289,6 +355,11 @@ class MachineBottom extends BodyComponent {
     svg = await Svg.load('images/lotto/machine/machine-bottom.svg');
     setColor(Colors.black);
     setAlpha(0);
+
+    // 별도의 PositionComponent로 hitbox 관리
+    bottomHitbox = MachineBottomHitbox(radius: radius);
+    bottomHitbox.position = position;
+    add(bottomHitbox);
   }
 
   @override
