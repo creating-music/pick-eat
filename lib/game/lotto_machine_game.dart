@@ -70,9 +70,15 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
 
   @override
   void update(double dt) {
-    super.update(dt);
-    super.update(dt);
-    super.update(dt);
+    // 화면 크기에 따른 시간 스케일링으로 속도 정규화
+    const double baseSize = 5.0; // 기준 화면 최소 크기
+    final double currentMinSize = min(widgetSize.x, widgetSize.y);
+    final double timeScale = sqrt(currentMinSize) / baseSize; // 작은 화면일수록 느리게
+    final double adjustedDt = dt * timeScale;
+    // double adjustedDt = 3 * dt;
+
+    super.update(adjustedDt);
+
     // MachineBody 기준 중심에서 아래쪽으로 일정 영역 설정
     final bodyRadius = min(widgetSize.x / 5, widgetSize.y / 5);
     final bodyCenterX = widgetSize.x / 2;
@@ -86,6 +92,7 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
     final double windZoneBottom = bodyCenterY + bodyRadius * 0.8;
     final double windZoneLeft = bodyCenterX - bodyRadius * 0.4;
     final double windZoneRight = bodyCenterX + bodyRadius * 0.4;
+
     // Ball 컴포넌트들에게 바람을 적용
     for (final component in children) {
       if (component is Ball) {
@@ -100,9 +107,9 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
               body.position.y <= windZoneBottom &&
               body.position.x >= windZoneLeft &&
               body.position.x <= windZoneRight) {
-            body.applyForce(Vector2(0, -200000000));
+            body.applyForce(Vector2(0, -300000000));
           } else {
-            body.applyForce(Vector2(0, -10000000));
+            body.applyForce(Vector2(0, -5000000));
           }
         }
       }
@@ -157,11 +164,31 @@ class Ball extends BodyComponent {
   @override
   Body createBody() {
     final shape = CircleShape()..radius = radius;
+
+    // 화면 크기에 따른 밀도 조정으로 질량 균형 맞추기
+    final game = findGame()! as LottoMachineGame;
+    const double baseSize = 400.0; // 기준 화면 크기
+    final double currentMinSize = min(game.widgetSize.x, game.widgetSize.y);
+    final double sizeRatio = radius * radius / baseSize;
+
+    // 밀도를 크기에 반비례하게 조정하여 질량을 균등하게 유지
+    final double adjustedDensity = 100.0 / sizeRatio;
+
+    // 화면 크기에 비례한 restitution 조정으로 상대적 튀어오름 높이 일정화
+    const double baseRestitution = 1; // 확실히 눈에 보이도록 대폭 증가
+    final double screenRatio = currentMinSize / baseSize;
+    final double adjustedRestitution = baseRestitution * screenRatio;
+
+    // 면적 역비례 friction 조정 (작은 공은 높은 friction, 큰 공은 낮은 friction)
+    const double baseFriction = 0.5;
+    const double baseRadius = 400.0 / 23; // 기준 공 크기
+    final double adjustedFriction = baseFriction * (baseRadius / radius);
+
     final fixtureDef =
         FixtureDef(shape)
-          ..density = 150.0
-          ..restitution = 0.8
-          ..friction = 0.5;
+          ..density = adjustedDensity
+          ..restitution = min(adjustedRestitution, 1)
+          ..friction = adjustedFriction;
 
     final bodyDef =
         BodyDef()
