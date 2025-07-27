@@ -10,7 +10,16 @@ import 'package:pick_eat/game/constant/ball_color.dart';
 class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
   final Vector2 widgetSize;
 
-  LottoMachineGame({required this.widgetSize}) : super(gravity: Vector2(0, 50));
+  // 바람 제어용 타이머
+  double _elapsedTime = 0.0;
+  final double _mixingDuration = 5.0; // 5초간 섞기
+  bool get _isMixingPhase => _elapsedTime < _mixingDuration;
+
+  // 구멍 막기용 컴포넌트
+  late BodyComponent _holePlug;
+
+  LottoMachineGame({required this.widgetSize})
+    : super(gravity: Vector2(0, 60)); // 중력 증가
 
   @override
   Color backgroundColor() => Colors.white;
@@ -66,6 +75,13 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
         radius: bodyRadius / 2,
       ),
     );
+
+    //////////////////////// Hole Plug (섞기 단계용) ///////////////////
+    _holePlug = HolePlug(
+      position: bodyCenter + Vector2(0, bodyRadius), // MachineBody 최하단
+      radius: bodyRadius * 0.15, // 구멍 크기에 맞춤
+    );
+    add(_holePlug);
   }
 
   @override
@@ -79,15 +95,23 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
 
     super.update(adjustedDt);
 
+    // 타이머 업데이트
+    _elapsedTime += dt;
+
+    // 5초 후 구멍 열기
+    if (_elapsedTime >= _mixingDuration && _holePlug.isMounted) {
+      remove(_holePlug);
+    }
+
     // MachineBody 기준 중심에서 아래쪽으로 일정 영역 설정
     final bodyRadius = min(widgetSize.x / 5, widgetSize.y / 5);
     final bodyCenterX = widgetSize.x / 2;
     final bodyCenterY = widgetSize.y / 2.5;
 
     final double windZoneMTop = bodyCenterY - bodyRadius * 1.5;
-    final double windZoneMBottom = bodyCenterY + bodyRadius * 1.5;
-    final double windZoneMLeft = bodyCenterX - bodyRadius * 1;
-    final double windZoneMRight = bodyCenterX + bodyRadius * 1;
+    final double windZoneMBottom = bodyCenterY + bodyRadius * 2.2;
+    final double windZoneMLeft = bodyCenterX - bodyRadius * 1.6;
+    final double windZoneMRight = bodyCenterX + bodyRadius * 1.6;
     final double windZoneTop = bodyCenterY - bodyRadius * 0.2;
     final double windZoneBottom = bodyCenterY + bodyRadius * 0.8;
     final double windZoneLeft = bodyCenterX - bodyRadius * 0.4;
@@ -98,6 +122,8 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
       if (component is Ball) {
         final ball = component;
         final body = ball.body;
+        final random = Random();
+        final windDirection = random.nextBool() ? 1 : -1;
 
         if (body.position.y >= windZoneMTop &&
             body.position.y <= windZoneMBottom &&
@@ -107,9 +133,10 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
               body.position.y <= windZoneBottom &&
               body.position.x >= windZoneLeft &&
               body.position.x <= windZoneRight) {
-            body.applyForce(Vector2(0, -300000000));
+            // 랜덤으로 바람 방향 결정
+            body.applyForce(Vector2(100000000.0 * windDirection, -400000000));
           } else {
-            body.applyForce(Vector2(0, -5000000));
+            body.applyForce(Vector2(1000000.0 * windDirection, -6000000));
           }
         }
       }
@@ -187,8 +214,8 @@ class Ball extends BodyComponent {
     final fixtureDef =
         FixtureDef(shape)
           ..density = adjustedDensity
-          ..restitution = min(adjustedRestitution, 1)
-          ..friction = adjustedFriction;
+          ..restitution = 0.8
+          ..friction = 0.08;
 
     final bodyDef =
         BodyDef()
@@ -491,5 +518,45 @@ class MachineBottomBack extends BodyComponent {
     canvas.translate(-diff / 2, -diff / 2);
     final size = Vector2.all(diff);
     svg.render(canvas, size);
+  }
+}
+
+class HolePlug extends BodyComponent {
+  final Vector2 position;
+  final double radius;
+
+  HolePlug({required this.position, required this.radius});
+
+  @override
+  Body createBody() {
+    final bodyDef =
+        BodyDef()
+          ..type = BodyType.static
+          ..position = position;
+
+    final body = world.createBody(bodyDef);
+
+    // 구멍을 막는 직사각형 벽 (더 효과적)
+    final shape =
+        PolygonShape()..setAsBox(
+          radius * 1.2, // 너비: 구멍보다 조금 더 넓게
+          radius * 0.2, // 높이: 얇은 판 형태
+          Vector2.zero(), // 중심 위치
+          0, // 회전 없음
+        );
+
+    final fixtureDef =
+        FixtureDef(shape)
+          ..friction = 0.5
+          ..restitution = 0.8;
+
+    body.createFixture(fixtureDef);
+    return body;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    // 완전히 보이지 않도록 렌더링 생략
+    // super.render(canvas); ← 주석 처리로 완전 투명
   }
 }
