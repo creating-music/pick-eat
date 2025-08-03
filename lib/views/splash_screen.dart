@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pick_eat/design/theme.dart';
 import 'package:pick_eat/viewmodels/lotto_viewmodel.dart';
 import 'package:pick_eat/views/lotto_screen.dart';
+import 'package:pick_eat/views/temp.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -16,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToResult(BuildContext context) {
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LottoScreen()),
+        MaterialPageRoute(builder: (context) => const TempScreen()),
       );
     }
   }
