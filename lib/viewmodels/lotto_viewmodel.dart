@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../game/lottery_game.dart';
 import '../models/menu.dart';
+import '../models/category.dart';
+import '../models/dislike_category.dart';
 import '../services/history_service.dart';
 import '../services/menu_selection_service.dart';
 
@@ -40,6 +42,10 @@ class LottoViewModel extends ChangeNotifier {
   bool isLotteryRunning = false;
   Menu? selectedMenu;
 
+  // 선호도 관리
+  Set<Category> _preferredCategories = <Category>{};
+  Set<DislikeCategory> _dislikedCategories = <DislikeCategory>{};
+
   // 결과 화면 네비게이션을 위한 콜백
   Function? onGameComplete;
 
@@ -49,6 +55,40 @@ class LottoViewModel extends ChangeNotifier {
   }) : _historyService = historyService,
        _menuSelectionService = menuSelectionService;
 
+  // 선호도 getter
+  Set<Category> get preferredCategories => Set.from(_preferredCategories);
+  Set<DislikeCategory> get dislikedCategories => Set.from(_dislikedCategories);
+
+  // 선호도 업데이트 메서드
+  void updatePreferredCategories(Set<Category> categories) {
+    debugPrint('=== 선호도 업데이트 ===');
+    debugPrint('이전 선호도: ${_preferredCategories.map((c) => c.name).toList()}');
+    debugPrint('새로운 선호도: ${categories.map((c) => c.name).toList()}');
+    
+    _preferredCategories = Set.from(categories);
+    
+    debugPrint('최종 선호도: ${_preferredCategories.map((c) => c.name).toList()}');
+    debugPrint('최종 불호도: ${_dislikedCategories.map((c) => c.name).toList()}');
+    debugPrint('===================\n');
+    
+    notifyListeners();
+  }
+
+  // 불호도 업데이트 메서드
+  void updateDislikedCategories(Set<DislikeCategory> categories) {
+    debugPrint('=== 불호도 업데이트 ===');
+    debugPrint('이전 불호도: ${_dislikedCategories.map((c) => c.name).toList()}');
+    debugPrint('새로운 불호도: ${categories.map((c) => c.name).toList()}');
+    
+    _dislikedCategories = Set.from(categories);
+    
+    debugPrint('최종 선호도: ${_preferredCategories.map((c) => c.name).toList()}');
+    debugPrint('최종 불호도: ${_dislikedCategories.map((c) => c.name).toList()}');
+    debugPrint('===================\n');
+    
+    notifyListeners();
+  }
+  
   // 게임 인스턴스에 대한 안전한 getter
   LotteryGame? get lotteryGame => _lotteryGame;
 
