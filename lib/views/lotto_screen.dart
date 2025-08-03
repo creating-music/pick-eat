@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../design/theme.dart';
 import '../game/lotto_machine_widget.dart';
+import '../widgets/lottery_machine.dart';
 import '../viewmodels/lotto_viewmodel.dart';
 import '../widgets/preference_bottom_sheet.dart';
 import '../widgets/menu_card.dart';
@@ -244,9 +245,7 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
     }
 
     // 기본 상태 → 로또 머신 표시
-    return LottoMachineWidget(
-      onBallCollision: _onGameComplete, // 👈 콜백 함수 추가
-    );
+    return const LotteryMachine();
   }
 
   // 하단 버튼 빌드 (조건부 렌더링)
