@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pick_eat/models/category.dart';
+import 'package:pick_eat/models/menu.dart';
+import 'package:pick_eat/views/result_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../design/theme.dart';
@@ -20,6 +23,29 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
 
   // 게임 위젯 관련 상태
   bool _showGameWidget = false;
+
+  void _onGameComplete() {
+    if (mounted) {
+      // ViewModel 상태 변경
+      // 1. 뽑기 실행 중 상태를 false로 변경
+      _viewModel.isLotteryRunning = false;
+
+      // 2. selectedMenu가 없다면 임시 메뉴 설정 (이미 있다면 그대로 유지)
+      _viewModel.selectedMenu ??= Menu(
+        id: '1',
+        name: "임시 메뉴",
+        category: Category.korean,
+      );
+
+      // 3. 게임 위젯 숨기기
+      setState(() {
+        _showGameWidget = false;
+      });
+
+      // 이제 조건문 if (viewModel.selectedMenu != null && !viewModel.isLotteryRunning)이
+      // true가 되어 MenuCard가 표시됩니다.
+    }
+  }
 
   @override
   void initState() {
@@ -210,15 +236,17 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
     // 뽑기 실행 중인 경우 → 게임 위젯 표시
     if (viewModel.isLotteryRunning) {
       return _showGameWidget
-          ? const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: LottoMachineWidget(),
+          ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: LottoMachineWidget(onBallCollision: _onGameComplete),
           )
           : const Center(child: CircularProgressIndicator());
     }
 
     // 기본 상태 → 로또 머신 표시
-    return const LottoMachineWidget();
+    return LottoMachineWidget(
+      onBallCollision: _onGameComplete, // 👈 콜백 함수 추가
+    );
   }
 
   // 하단 버튼 빌드 (조건부 렌더링)

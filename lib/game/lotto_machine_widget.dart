@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:pick_eat/game/lotto_machine_game.dart';
 
 class LottoMachineWidget extends StatelessWidget {
-  const LottoMachineWidget({super.key});
+  final VoidCallback? onBallCollision;
+
+  const LottoMachineWidget({super.key, this.onBallCollision});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +19,10 @@ class LottoMachineWidget extends StatelessWidget {
         width: width,
         height: height,
         child: GameWidget(
-          game: LottoMachineGame(widgetSize: Vector2(width, height)),
+          game: LottoMachineGame(
+            widgetSize: Vector2(width, height),
+            onBallCollision: onBallCollision,
+          ),
         ),
       ),
     );
