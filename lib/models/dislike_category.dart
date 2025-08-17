@@ -1,14 +1,21 @@
-enum DislikeCategory { 
-  seafood,     // 해산물
-  meat,        // 육류
-  beef,        // 소고기
-  pork,        // 돼지고기
-  chicken,     // 닭고기
-  fish,        // 생선
-  spicy,       // 매운음식
-  sweet,       // 단음식
-  salty,       // 짠음식
-  cold,        // 찬음식
-  hot,         // 뜨거운음식
-  dairy,       // 유제품
-} 
+enum DislikeCategory {
+  seafood('해산물'),
+  meat('육류'),
+  beef('소고기'),
+  pork('돼지고기'),
+  chicken('닭고기'),
+  lamb('양고기'),
+  vegetable('채소'),
+  rawFish('회'),
+  organ('내장'),
+  noodle('면'),
+  rice('밥'),
+  soup('국물'),
+  spicy('매운 것'),
+  greasy('느끼한 것'),
+  cold('차가운 것'),
+  warm('따듯한 것');
+
+  const DislikeCategory(this.displayName);
+  final String displayName;
+}

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pick_eat/models/category.dart';
 import 'package:pick_eat/models/menu.dart';
-import 'package:pick_eat/views/result_screen.dart';
+import 'package:pick_eat/models/preference.dart';
 import 'package:provider/provider.dart';
 
 import '../design/theme.dart';
@@ -36,6 +36,8 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
         id: '1',
         name: "임시 메뉴",
         category: Category.korean,
+        preference: PreferenceCategory.korean,
+        dislikes: [],
       );
 
       // 3. 게임 위젯 숨기기
