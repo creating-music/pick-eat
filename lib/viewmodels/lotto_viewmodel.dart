@@ -64,13 +64,19 @@ class LottoViewModel extends ChangeNotifier {
     debugPrint('=== 선호도 업데이트 ===');
     debugPrint('이전 선호도: ${_preferredCategories.map((c) => c.name).toList()}');
     debugPrint('새로운 선호도: ${categories.map((c) => c.name).toList()}');
-    
+
     _preferredCategories = Set.from(categories);
-    
+
+    // MenuSelectionService에 선호도 전달
+    _menuSelectionService.updatePreferences(
+      preferredCategories: _preferredCategories,
+      dislikedCategories: _dislikedCategories,
+    );
+
     debugPrint('최종 선호도: ${_preferredCategories.map((c) => c.name).toList()}');
     debugPrint('최종 불호도: ${_dislikedCategories.map((c) => c.name).toList()}');
     debugPrint('===================\n');
-    
+
     notifyListeners();
   }
 
@@ -79,16 +85,22 @@ class LottoViewModel extends ChangeNotifier {
     debugPrint('=== 불호도 업데이트 ===');
     debugPrint('이전 불호도: ${_dislikedCategories.map((c) => c.name).toList()}');
     debugPrint('새로운 불호도: ${categories.map((c) => c.name).toList()}');
-    
+
     _dislikedCategories = Set.from(categories);
-    
+
+    // MenuSelectionService에 불호도 전달
+    _menuSelectionService.updatePreferences(
+      preferredCategories: _preferredCategories,
+      dislikedCategories: _dislikedCategories,
+    );
+
     debugPrint('최종 선호도: ${_preferredCategories.map((c) => c.name).toList()}');
     debugPrint('최종 불호도: ${_dislikedCategories.map((c) => c.name).toList()}');
     debugPrint('===================\n');
-    
+
     notifyListeners();
   }
-  
+
   // 게임 인스턴스에 대한 안전한 getter
   LotteryGame? get lotteryGame => _lotteryGame;
 

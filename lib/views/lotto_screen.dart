@@ -1,11 +1,13 @@
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:pick_eat/models/category.dart';
+import 'package:pick_eat/models/menu.dart';
+import 'package:pick_eat/models/preference.dart';
 import 'package:provider/provider.dart';
 
 import '../design/theme.dart';
-import '../game/lottery_game.dart';
-import '../viewmodels/lotto_viewmodel.dart';
+import '../game/lotto_machine_widget.dart';
 import '../widgets/lottery_machine.dart';
+import '../viewmodels/lotto_viewmodel.dart';
 import '../widgets/preference_bottom_sheet.dart';
 import '../widgets/menu_card.dart';
 
@@ -20,12 +22,33 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
   late LottoViewModel _viewModel;
   bool _callbackRegistered = false;
 
-  // 게임 인스턴스를 위젯 내부에서 직접 관리
-  LotteryGame? _gameInstance;
-  bool _creatingGame = false;
-
   // 게임 위젯 관련 상태
   bool _showGameWidget = false;
+
+  void _onGameComplete() {
+    if (mounted) {
+      // ViewModel 상태 변경
+      // 1. 뽑기 실행 중 상태를 false로 변경
+      _viewModel.isLotteryRunning = false;
+
+      // 2. selectedMenu가 없다면 임시 메뉴 설정 (이미 있다면 그대로 유지)
+      _viewModel.selectedMenu ??= Menu(
+        id: '1',
+        name: "임시 메뉴",
+        category: Category.korean,
+        preference: PreferenceCategory.korean,
+        dislikes: [],
+      );
+
+      // 3. 게임 위젯 숨기기
+      setState(() {
+        _showGameWidget = false;
+      });
+
+      // 이제 조건문 if (viewModel.selectedMenu != null && !viewModel.isLotteryRunning)이
+      // true가 되어 MenuCard가 표시됩니다.
+    }
+  }
 
   @override
   void initState() {
@@ -39,7 +62,6 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _cleanupGameInstance();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -49,7 +71,6 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
     // 앱이 백그라운드로 갔다가 돌아올 때 리소스 정리
     if (state == AppLifecycleState.paused) {
       _viewModel.reset();
-      _cleanupGameInstance();
     }
   }
 
@@ -62,65 +83,9 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
           setState(() {
             _showGameWidget = false;
           });
-          _cleanupGameInstance();
         }
       };
       _callbackRegistered = true;
-    }
-  }
-
-  // 게임 인스턴스 정리 메서드
-  void _cleanupGameInstance() {
-    if (_gameInstance != null) {
-      try {
-        _gameInstance!.cleanupResources();
-        _gameInstance = null;
-        debugPrint('Game instance successfully cleaned up in widget');
-      } catch (e) {
-        debugPrint('Error cleaning up game instance: $e');
-      }
-    }
-  }
-
-  // 게임 인스턴스 생성 메서드
-  Future<void> _createGameInstance() async {
-    if (_creatingGame) return;
-
-    _creatingGame = true;
-    try {
-      // 기존 게임 인스턴스 정리
-      _cleanupGameInstance();
-
-      // 새 게임 인스턴스 생성
-      final instance = LotteryGame();
-
-      // 공 선택 완료 시 히스토리 처리
-      instance.onBallSelected = () async {
-        if (_viewModel.isLotteryRunning) {
-          // 뽑기 상태 업데이트
-          _viewModel.isLotteryRunning = false;
-          _viewModel.notifyListeners();
-
-          // 히스토리에 추가
-          if (_viewModel.selectedMenu != null) {
-            await _viewModel.addMenuToHistory(_viewModel.selectedMenu!);
-          }
-
-          // 게임 완료 콜백 호출 (결과 화면 표시용)
-          if (mounted) {
-            _viewModel.onGameComplete?.call();
-          }
-        }
-      };
-
-      if (mounted) {
-        setState(() {
-          _gameInstance = instance;
-          _showGameWidget = true;
-        });
-      }
-    } finally {
-      _creatingGame = false;
     }
   }
 
@@ -130,20 +95,18 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
 
     // 상태 업데이트 (UI 즉시 반영)
     _viewModel.isLotteryRunning = true;
-    _viewModel.notifyListeners();
 
     // UI 업데이트 기다림
     await Future.microtask(() {});
 
-    // 게임 인스턴스 생성
-    await _createGameInstance();
-
-    // 메뉴 서비스 직접 접근 대신 뷰모델의 메서드 활용
+    // 메뉴 선택
     await _viewModel.selectRandomMenu();
 
-    // 게임 시작
-    if (mounted && _gameInstance != null && _viewModel.isLotteryRunning) {
-      _gameInstance!.startLottery();
+    // 게임 위젯 표시
+    if (mounted) {
+      setState(() {
+        _showGameWidget = true;
+      });
     }
   }
 
@@ -152,8 +115,7 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
     setState(() {
       _showGameWidget = false;
     });
-    _cleanupGameInstance();
-    
+
     // 리셋 후 바로 새로운 뽑기 시작
     await _startLottery();
   }
@@ -164,14 +126,15 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => PreferenceBottomSheet(
-        title: '선호 확인',
-        isPreference: true,
-        initialSelectedPreferences: _viewModel.preferredCategories,
-        onConfirmPreferences: (selectedCategories) {
-          _viewModel.updatePreferredCategories(selectedCategories);
-        },
-      ),
+      builder:
+          (context) => PreferenceBottomSheet(
+            title: '선호 확인',
+            isPreference: true,
+            initialSelectedPreferences: _viewModel.preferredCategories,
+            onConfirmPreferences: (selectedCategories) {
+              _viewModel.updatePreferredCategories(selectedCategories);
+            },
+          ),
     );
   }
 
@@ -181,14 +144,15 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => PreferenceBottomSheet(
-        title: '불호 확인',
-        isPreference: false,
-        initialSelectedDislikes: _viewModel.dislikedCategories,
-        onConfirmDislikes: (selectedCategories) {
-          _viewModel.updateDislikedCategories(selectedCategories);
-        },
-      ),
+      builder:
+          (context) => PreferenceBottomSheet(
+            title: '불호 확인',
+            isPreference: false,
+            initialSelectedDislikes: _viewModel.dislikedCategories,
+            onConfirmDislikes: (selectedCategories) {
+              _viewModel.updateDislikedCategories(selectedCategories);
+            },
+          ),
     );
   }
 
@@ -209,7 +173,8 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
                 children: [
                   Text(
                     // 메뉴가 뽑힌 상태에서는 다른 제목 표시
-                    viewModel.selectedMenu != null && !viewModel.isLotteryRunning
+                    viewModel.selectedMenu != null &&
+                            !viewModel.isLotteryRunning
                         ? '오늘의 추천 메뉴'
                         : '추천 메뉴 뽑기',
                     style: TextStyle(
@@ -220,7 +185,8 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
                   ),
                   Text(
                     // 메뉴가 뽑힌 상태에서는 다른 설명 표시
-                    viewModel.selectedMenu != null && !viewModel.isLotteryRunning
+                    viewModel.selectedMenu != null &&
+                            !viewModel.isLotteryRunning
                         ? '이런 메뉴는 어떠신가요?'
                         : '오늘 먹을 메뉴를 뽑아보세요',
                     style: TextStyle(
@@ -241,9 +207,7 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
             child: Column(
               children: [
                 // 메인 컨텐츠 영역 - 조건부 렌더링
-                Expanded(
-                  child: _buildMainContent(viewModel),
-                ),
+                Expanded(child: _buildMainContent(viewModel)),
 
                 // 하단 버튼 영역 - 조건부 렌더링
                 _buildBottomButtons(viewModel),
@@ -271,19 +235,17 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
         ),
       );
     }
-    
+
     // 뽑기 실행 중인 경우 → 게임 위젯 표시
     if (viewModel.isLotteryRunning) {
-      return _showGameWidget && _gameInstance != null
+      return _showGameWidget
           ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: ClipRect(
-                child: GameWidget(game: _gameInstance!),
-              ),
-            )
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: LottoMachineWidget(onBallCollision: _onGameComplete),
+          )
           : const Center(child: CircularProgressIndicator());
     }
-    
+
     // 기본 상태 → 로또 머신 표시
     return const LotteryMachine();
   }
@@ -307,11 +269,12 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
                 ),
                 elevation: 0,
               ),
-              onPressed: viewModel.isLotteryRunning 
-                  ? null 
-                  : (viewModel.selectedMenu != null 
-                      ? _retryLottery 
-                      : _startLottery),
+              onPressed:
+                  viewModel.isLotteryRunning
+                      ? null
+                      : (viewModel.selectedMenu != null
+                          ? _retryLottery
+                          : _startLottery),
               child: Text(
                 viewModel.selectedMenu != null ? '다시 뽑기' : '뽑기',
                 style: const TextStyle(
@@ -321,7 +284,7 @@ class _LottoScreenState extends State<LottoScreen> with WidgetsBindingObserver {
               ),
             ),
           ),
-          
+
           // 뽑기 실행 중이 아닐 때만 하단 두 버튼 표시
           if (!viewModel.isLotteryRunning) ...[
             const SizedBox(height: 12),

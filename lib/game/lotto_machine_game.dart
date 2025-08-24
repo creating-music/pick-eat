@@ -9,6 +9,7 @@ import 'package:pick_eat/game/constant/ball_color.dart';
 
 class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
   final Vector2 widgetSize;
+  final VoidCallback? onBallCollision;
 
   // 바람 제어용 타이머
   double _elapsedTime = 0.0;
@@ -18,7 +19,7 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
   // 구멍 막기용 컴포넌트
   late BodyComponent _holePlug;
 
-  LottoMachineGame({required this.widgetSize})
+  LottoMachineGame({required this.widgetSize, this.onBallCollision})
     : super(gravity: Vector2(0, 60)); // 중력 증가
 
   @override
@@ -73,6 +74,7 @@ class LottoMachineGame extends Forge2DGame with HasCollisionDetection {
       MachineBottom(
         position: bodyCenter + Vector2(0, bodyRadius * 1.47),
         radius: bodyRadius / 2,
+        onBallCollision: onBallCollision,
       ),
     );
 
@@ -359,8 +361,9 @@ class MachineHat extends BodyComponent {
 class MachineBottomHitbox extends PositionComponent with CollisionCallbacks {
   final double radius;
   final Set<BallHitbox> _collidedBalls = <BallHitbox>{};
+  final VoidCallback? onBallCollision;
 
-  MachineBottomHitbox({required this.radius});
+  MachineBottomHitbox({required this.radius, this.onBallCollision});
 
   @override
   Future<void> onLoad() async {
@@ -387,7 +390,8 @@ class MachineBottomHitbox extends PositionComponent with CollisionCallbacks {
         // 1-2초 지연 후 출력
         Future.delayed(Duration(seconds: 1), () {
           debugPrint('Ball이 MachineBottom의 bottomShape에 충돌했습니다!');
-          debugPrint('충돌한 Ball 색상: ${other.ballColor}');
+
+          onBallCollision?.call();
         });
       }
     }
@@ -400,8 +404,13 @@ class MachineBottom extends BodyComponent {
   final double radius;
   late final Svg svg;
   late final MachineBottomHitbox bottomHitbox;
+  final VoidCallback? onBallCollision;
 
-  MachineBottom({required this.position, required this.radius});
+  MachineBottom({
+    required this.position,
+    required this.radius,
+    this.onBallCollision,
+  });
 
   @override
   Future<void> onLoad() async {
@@ -411,7 +420,10 @@ class MachineBottom extends BodyComponent {
     setAlpha(0);
 
     // 별도의 PositionComponent로 hitbox 관리
-    bottomHitbox = MachineBottomHitbox(radius: radius);
+    bottomHitbox = MachineBottomHitbox(
+      radius: radius,
+      onBallCollision: onBallCollision,
+    );
     bottomHitbox.position = position;
     add(bottomHitbox);
   }
